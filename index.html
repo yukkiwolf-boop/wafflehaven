@@ -1,0 +1,890 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no" />
+  <title>Waffle Haven — Your Favorite Online Waffle Shop</title>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700;800&family=Fredoka+One&family=Playfair+Display:wght@600;700&display=swap" rel="stylesheet">
+  <style>
+    /* --- THEME VARIABLES --- */
+    :root {
+      /* DARK MODE (DEFAULT) */
+      --bg-body: #0a0502;
+      --bg-panel: #1a1008;
+      --bg-card: #26180c;
+      --text-main: #ffffff;      /* Pure white for main text */
+      --text-muted: #d1c7b7;     /* Lighter beige for descriptions */
+      --accent: #f0c05a;         /* Gold */
+      --border: rgba(240,192,90,0.2);
+      --glass: rgba(255,255,255,0.08);
+      --shadow: 0 10px 30px rgba(0,0,0,0.6);
+      
+      /* UTILS */
+      --success: #4caf50;
+      --danger: #ff4d4d;
+      --slashed: #888;
+    }
+
+    /* LIGHT MODE OVERRIDES */
+    body.light-mode {
+      --bg-body: #f9f6f2;
+      --bg-panel: #ffffff;
+      --bg-card: #ffffff;
+      --text-main: #2b1600;
+      --text-muted: #665c54;
+      --accent: #d98436; 
+      --border: rgba(0,0,0,0.1);
+      --glass: rgba(0,0,0,0.05);
+      --shadow: 0 5px 20px rgba(0,0,0,0.08);
+      --slashed: #aaa;
+    }
+
+    * { box-sizing: border-box; }
+    
+    body {
+        margin: 0;
+        font-family: 'Inter', sans-serif;
+        background-color: var(--bg-body);
+        color: var(--text-main);
+        transition: background 0.3s, color 0.3s;
+        line-height: 1.5;
+    }
+
+    /* RESPONSIVE CONTAINER */
+    .app-container {
+        width: 100%;
+        max-width: 1280px;
+        margin: 0 auto;
+        padding: 0 16px 80px 16px;
+        min-height: 100vh;
+    }
+
+    /* HEADER */
+    header {
+        display: flex; align-items: center; justify-content: space-between;
+        padding: 15px 0;
+        position: sticky; top: 0;
+        background: var(--bg-body);
+        z-index: 100;
+        border-bottom: 1px solid var(--border);
+        transition: background 0.3s;
+    }
+    .logo-section { display: flex; align-items: center; gap: 12px; }
+    .logo {
+        width: 55px; height: 55px; border-radius: 50%;
+        background: var(--accent); color: #2b1600;
+        display: flex; align-items: center; justify-content: center;
+        font-family: 'Fredoka One'; font-size: 28px;
+        box-shadow: 0 0 15px rgba(240,192,90,0.4);
+    }
+    .brand-text h1 { margin: 0; font-family: 'Fredoka One'; font-size: 26px; color: var(--accent); line-height: 1; text-shadow: 2px 2px 0 rgba(0,0,0,0.5); }
+    .brand-text p { margin: 3px 0 0 0; font-size: 12px; color: var(--text-muted); letter-spacing: 1.5px; text-transform: uppercase; font-weight: 600; }
+
+    .header-actions { display: flex; align-items: center; gap: 10px; }
+    .icon-btn { background: var(--glass); border: 1px solid var(--border); color: var(--text-main); padding: 8px; border-radius: 50%; cursor: pointer; width: 42px; height: 42px; display: flex; align-items: center; justify-content: center; font-size: 20px; transition: 0.2s; }
+    .icon-btn:hover { background: var(--border); transform: scale(1.05); }
+
+    /* CAROUSEL */
+    .carousel-wrap { 
+        position: relative; width: 100%; height: 200px; margin-bottom: 25px; 
+        border-radius: 20px; overflow: hidden; box-shadow: var(--shadow); 
+    }
+    @media(min-width:768px){ .carousel-wrap { height: 350px; } }
+    
+    .carousel-track { display: flex; height: 100%; transition: transform 0.5s ease-in-out; }
+    .c-slide { min-width: 100%; height: 100%; position: relative; }
+    .c-slide img { width: 100%; height: 100%; object-fit: cover; filter: brightness(0.5); }
+    .c-content { position: absolute; top: 0; left: 0; width: 100%; height: 100%; display: flex; flex-direction: column; justify-content: center; padding: 40px; text-shadow: 2px 2px 4px rgba(0,0,0,0.9); text-align: center; align-items: center; }
+    .c-title { font-family: 'Fredoka One'; font-size: 36px; color: var(--accent); margin: 0; }
+    .c-desc { font-size: 18px; color: #fff; margin: 10px 0 20px 0; font-weight: 500; }
+    .c-btn { background: var(--accent); color: #2b1600; border: none; padding: 12px 24px; border-radius: 30px; font-weight: bold; cursor: pointer; width: fit-content; font-size: 14px; box-shadow: 0 5px 15px rgba(0,0,0,0.3); }
+    
+    .c-nav { position: absolute; bottom: 15px; left: 50%; transform: translateX(-50%); display: flex; gap: 8px; z-index: 20; }
+    .c-dot { width: 10px; height: 10px; border-radius: 50%; background: rgba(255,255,255,0.4); cursor: pointer; transition: 0.3s; }
+    .c-dot.active { background: var(--accent); transform: scale(1.2); }
+
+    /* CAROUSEL ARROWS */
+    .c-arrow { 
+        position: absolute; top: 50%; transform: translateY(-50%); 
+        background: rgba(0,0,0,0.4); color: #fff; border: none; 
+        width: 40px; height: 40px; border-radius: 50%; cursor: pointer; 
+        display: flex; align-items: center; justify-content: center; font-size: 20px; 
+        z-index: 20; transition: 0.2s; opacity: 0; 
+    }
+    .carousel-wrap:hover .c-arrow { opacity: 1; }
+    .c-arrow:hover { background: var(--accent); color: #000; }
+    .c-prev { left: 15px; }
+    .c-next { right: 15px; }
+
+    /* SEARCH */
+    .search-bar { margin-bottom: 20px; }
+    .search-input { width: 100%; padding: 16px 24px; border-radius: 15px; background: var(--glass); border: 1px solid var(--border); color: var(--text-main); outline: none; font-size: 16px; }
+    .search-input::placeholder { color: var(--text-muted); opacity: 0.8; }
+    .search-input:focus { border-color: var(--accent); box-shadow: 0 0 0 2px rgba(240,192,90,0.2); }
+
+    /* BUILDER HERO */
+    .hero-wrap {
+        background: var(--bg-panel); border-radius: 24px; overflow: hidden; border: var(--border);
+        box-shadow: var(--shadow); margin-bottom: 30px;
+        display: flex; flex-direction: column;
+    }
+    @media(min-width: 800px) { .hero-wrap { flex-direction: row; } } 
+
+    .hero-visual {
+        flex: 1; background: radial-gradient(circle at center, #3a2514 0%, #1a1008 100%);
+        padding: 40px; display: flex; flex-direction: column; align-items: center; justify-content: center; min-height: 320px;
+    }
+    .flat-waffle {
+        width: 240px; height: 240px; background-color: #eecfa1; border-radius: 50%; position: relative;
+        box-shadow: inset -5px -5px 20px rgba(0,0,0,0.3), inset 5px 5px 20px rgba(255,255,255,0.15), 0 20px 50px rgba(0,0,0,0.6);
+        display: grid; grid-template-columns: repeat(6, 1fr); grid-template-rows: repeat(6, 1fr);
+        gap: 5px; padding: 18px; overflow: hidden; transition: transform 0.3s;
+    }
+    .flat-waffle:hover { transform: scale(1.02) rotate(2deg); }
+    .w-hole { background-color: #c68c53; border-radius: 4px; box-shadow: inset 2px 2px 5px rgba(0,0,0,0.4); }
+    .topping-dot { position: absolute; width: 45px; height: 45px; border-radius: 50%; background-size: cover; box-shadow: 2px 5px 10px rgba(0,0,0,0.5); pointer-events: none; z-index: 10; animation: drop 0.5s forwards; }
+    @keyframes drop { from{transform:translateY(-100px) scale(0.5); opacity:0} to{transform:translateY(0) scale(1); opacity:1} }
+
+    .hero-controls { flex: 1.2; padding: 30px; display: flex; flex-direction: column; }
+    .hero-controls h2 { margin: 0 0 10px 0; font-family: 'Fredoka One'; color: var(--accent); font-size: 32px; }
+    .hero-controls p { color: var(--text-muted); line-height: 1.6; margin-bottom: 20px; font-size: 15px; }
+
+    /* TABS & GRID */
+    .tabs { display: flex; gap: 10px; overflow-x: auto; padding-bottom: 10px; margin-bottom: 10px; }
+    .tab-btn { background: transparent; border: 1px solid var(--border); color: var(--text-muted); padding: 10px 20px; border-radius: 20px; cursor: pointer; white-space: nowrap; font-weight: 600; transition: 0.2s; font-size: 14px; }
+    .tab-btn:hover { border-color: var(--accent); color: var(--text-main); }
+    .tab-btn.active { background: var(--accent); color: #2b1600; border-color: var(--accent); }
+
+    .topping-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(90px, 1fr)); gap: 10px; max-height: 220px; overflow-y: auto; }
+    .t-btn { background: var(--glass); border: 1px solid var(--border); border-radius: 12px; padding: 10px; cursor: pointer; text-align: center; display: flex; flex-direction: column; align-items: center; gap: 8px; transition: 0.2s; }
+    .t-btn:hover { background: var(--border); }
+    .t-btn.selected { border-color: var(--accent); background: rgba(240,192,90,0.15); }
+    .t-btn img { width: 45px; height: 45px; border-radius: 50%; object-fit: cover; }
+    .t-btn span { font-size: 12px; color: var(--text-main); font-weight: 500; }
+
+    .builder-footer { margin-top: auto; padding-top: 20px; border-top: 1px dashed var(--border); display: flex; justify-content: space-between; align-items: center; }
+    .current-price { font-size: 32px; font-weight: 800; color: var(--accent); font-family: 'Fredoka One'; }
+
+    /* CATEGORIES NAV */
+    .cat-wrap { position: sticky; top: 80px; z-index: 90; background: var(--bg-body); padding: 15px 0; margin-bottom: 20px; overflow-x: auto; white-space: nowrap; display: flex; gap: 10px; border-bottom: 1px solid var(--border); }
+    .cat-btn { padding: 10px 24px; border-radius: 30px; background: var(--bg-panel); border: 1px solid var(--border); color: var(--text-muted); cursor: pointer; font-weight: 600; font-size: 14px; transition: 0.3s; }
+    .cat-btn:hover { border-color: var(--accent); color: var(--text-main); }
+    .cat-btn.active { background: var(--accent); color: #2b1600; border-color: var(--accent); }
+
+    /* PRODUCTS GRID */
+    .grid { display: grid; grid-template-columns: 1fr; gap: 16px; }
+    @media (min-width: 600px) { .grid { grid-template-columns: repeat(auto-fill, minmax(250px, 1fr)); gap: 24px; } }
+
+    .card { background: var(--bg-card); border-radius: 20px; padding: 16px; border: 1px solid var(--border); display: flex; gap: 15px; align-items: center; transition: transform 0.2s; cursor: pointer; box-shadow: var(--shadow); }
+    
+    /* PC Layout */
+    @media (min-width: 600px) {
+        .card { flex-direction: column; align-items: flex-start; text-align: left; height: 100%; }
+        .card img { width: 100%; height: 180px; border-radius: 15px; }
+        .card-info { width: 100%; display: flex; flex-direction: column; flex: 1; }
+        .card-actions { margin-top: auto; }
+    }
+    /* Mobile Layout */
+    @media (max-width: 599px) {
+        .card img { width: 90px; height: 90px; border-radius: 15px; object-fit: cover; flex-shrink: 0; }
+        .card-info { flex: 1; min-width: 0; }
+    }
+
+    .card:hover { transform: translateY(-5px); border-color: var(--accent); }
+    .card h3 { margin: 10px 0 5px 0; font-family: 'Fredoka One'; font-size: 18px; color: var(--text-main); }
+    .card p { font-size: 13px; color: var(--text-muted); margin: 0 0 12px 0; line-height: 1.4; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
+    
+    .card-actions { display: flex; justify-content: space-between; align-items: center; width: 100%; }
+    .price-wrap { display: flex; flex-direction: column; line-height: 1; }
+    .price-new { font-weight: 800; font-size: 18px; color: var(--accent); }
+    .price-old { font-size: 12px; color: var(--slashed); text-decoration: line-through; margin-bottom: 2px; font-weight: 600; }
+    .add-btn { width: 38px; height: 38px; border-radius: 50%; background: var(--accent); color: #2b1600; border: none; font-size: 22px; display: flex; align-items: center; justify-content: center; cursor: pointer; transition: 0.2s; box-shadow: 0 4px 10px rgba(0,0,0,0.3); }
+    .add-btn:hover { transform: scale(1.1); background: #fff; }
+
+    /* BOTTOM BAR */
+    .bottom-bar {
+        position: fixed; bottom: 0; left: 0; right: 0; background: var(--bg-panel); border-top: 1px solid var(--accent);
+        padding: 15px 24px; display: flex; justify-content: space-between; align-items: center; z-index: 500; box-shadow: 0 -5px 20px rgba(0,0,0,0.5);
+    }
+    @media(min-width: 800px) { .bottom-bar { display: none; } }
+
+    /* TOAST */
+    .toast { position: fixed; bottom: 90px; left: 50%; transform: translateX(-50%) translateY(100px); background: var(--accent); color: #2b1600; padding: 12px 30px; border-radius: 30px; font-weight: bold; z-index: 2000; opacity: 0; transition: 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275); box-shadow: 0 10px 25px rgba(0,0,0,0.5); pointer-events: none; font-size: 16px; }
+    .toast.show { transform: translateX(-50%) translateY(0); opacity: 1; }
+
+    /* MODALS */
+    .modal { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.85); z-index: 1000; backdrop-filter: blur(8px); align-items: flex-end; justify-content: center; }
+    .modal.open { display: flex; }
+    @media(min-width: 768px) { .modal { align-items: center; } }
+
+    .sheet {
+        background: var(--bg-panel); width: 100%; max-width: 500px; border-radius: 24px 24px 0 0; padding: 30px; border-top: 4px solid var(--accent);
+        max-height: 90vh; overflow-y: auto; animation: slideUp 0.3s ease; color: var(--text-main); box-shadow: 0 -10px 40px rgba(0,0,0,0.5);
+    }
+    @media(min-width: 768px) { .sheet { border-radius: 24px; animation: fadeIn 0.3s ease; } }
+    @keyframes slideUp { from { transform: translateY(100%); } to { transform: translateY(0); } }
+    @keyframes fadeIn { from { transform: scale(0.95); opacity:0; } to { transform: scale(1); opacity:1; } }
+
+    .sheet-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 25px; }
+    .sheet-header h3 { margin: 0; font-family: 'Fredoka One'; font-size: 22px; color: var(--accent); }
+    .close-btn { background: none; border: none; color: var(--text-muted); font-size: 30px; cursor: pointer; transition: 0.2s; }
+    .close-btn:hover { color: var(--accent); }
+
+    /* FORMS */
+    .form-group { margin-bottom: 18px; }
+    .form-label { display: block; font-size: 13px; color: var(--text-muted); margin-bottom: 8px; font-weight: 600; }
+    .form-input, select, textarea { 
+        width: 100%; padding: 14px; background: var(--glass); border: 1px solid var(--border); 
+        border-radius: 12px; color: var(--text-main); outline: none; font-family: inherit; font-size: 15px;
+    }
+    .form-input:focus { border-color: var(--accent); }
+    .btn { background: linear-gradient(90deg, var(--accent), var(--syrup)); color: #2b1600; border: none; padding: 16px; border-radius: 14px; font-weight: 800; cursor: pointer; width: 100%; transition: 0.2s; font-size: 16px; box-shadow: 0 5px 15px rgba(240,192,90,0.2); }
+    .btn-ghost { background: transparent; border: 1px solid var(--border); color: var(--text-muted); padding: 12px; border-radius: 12px; cursor: pointer; font-weight: 600; }
+    .btn-ghost:hover { border-color: var(--text-main); color: var(--text-main); background: var(--glass); }
+
+    /* REVIEWS & RECEIPT */
+    .review-box { margin-top: 15px; max-height: 200px; overflow-y: auto; border-top: 1px solid var(--border); padding-top: 15px; }
+    .review-item { margin-bottom: 15px; border-bottom: 1px solid var(--border); padding-bottom: 10px; }
+    .r-head { display: flex; justify-content: space-between; font-size: 14px; color: var(--accent); font-weight: bold; }
+    .r-text { font-size: 14px; color: var(--text-main); margin-top: 5px; line-height: 1.5; }
+    .receipt-paper { background: #fff; color: #000; padding: 30px; font-family: 'Courier New', monospace; position: relative; margin-top: 10px; width: 100%; }
+    .r-row { display: flex; justify-content: space-between; margin-bottom: 8px; font-size: 14px; }
+    .r-line { border-bottom: 1px dashed #000; margin: 15px 0; }
+
+    ::-webkit-scrollbar { width: 6px; }
+    ::-webkit-scrollbar-thumb { background: #333; border-radius: 3px; }
+    ::-webkit-scrollbar-thumb:hover { background: var(--accent); }
+  </style>
+</head>
+<body>
+
+<div id="toast" class="toast">Added to Tray!</div>
+
+<div class="app-container">
+    
+    <header>
+        <div class="logo-section">
+            <div class="logo">WH</div>
+            <div class="brand-text">
+                <h1>Waffle Heaven</h1>
+                <p>The Circle of Joy</p>
+            </div>
+        </div>
+        <div class="header-actions">
+            <button class="icon-btn" onclick="toggleTheme()" title="Toggle Theme">🌗</button>
+            <button class="icon-btn" onclick="openLogin()" id="loginBtnIcon" title="Login">👤</button>
+            <button class="icon-btn" onclick="openCart()" style="width:auto; padding:0 15px; border-radius:20px; display:none;" id="pcCartBtn">
+                🛒 <span id="pcCount" style="margin-left:8px; font-weight:bold; font-size:16px;">0</span>
+            </button>
+        </div>
+    </header>
+
+    <div class="carousel-wrap" onmouseenter="pauseCarousel()" onmouseleave="startCarousel()">
+        <button class="c-arrow c-prev" onclick="prevSlide()">&#10094;</button>
+        <button class="c-arrow c-next" onclick="nextSlide()">&#10095;</button>
+        
+        <div class="carousel-track" id="cTrack">
+            <div class="c-slide">
+                <img src="https://images.unsplash.com/photo-1484723091739-30a097e8f929?w=1000" alt="Promo">
+                <div class="c-content">
+                    <h2 class="c-title">New Customer?</h2>
+                    <p class="c-desc">Get ₱50 OFF your first order with code <strong>WELCOME50</strong></p>
+                    <button class="c-btn" onclick="openLogin()">Login to Claim</button>
+                </div>
+            </div>
+            <div class="c-slide">
+                <img src="https://thumbs.dreamstime.com/b/belgian-chef-holding-platter-waffles-topped-whipped-cream-strawberries-pic-359193863.jpg" alt="Promo">
+                <div class="c-content">
+                    <h2 class="c-title">Chef's Combos</h2>
+                    <p class="c-desc">20 New Curated Flavors Added!</p>
+                    <button class="c-btn" onclick="setCategory('combos'); scrollToSection('productGrid')">View Menu</button>
+                </div>
+            </div>
+            <div class="c-slide">
+                <img src="https://thumbs.dreamstime.com/b/woman-eating-belgium-waffles-chocolate-sauce-closeup-ice-cream-strawberries-cafe-76457356.jpg" alt="Promo">
+                <div class="c-content">
+                    <h2 class="c-title">Savory Lunch</h2>
+                    <p class="c-desc">Chicken & Waffles for just ₱199</p>
+                    <button class="c-btn" onclick="setCategory('savory'); scrollToSection('productGrid')">Order Now</button>
+                </div>
+            </div>
+        </div>
+        <div class="c-nav" id="cNav"></div>
+    </div>
+
+    <div class="search-bar">
+        <input class="search-input" placeholder="Search for flavors..." onkeyup="filterGlobal(this.value)">
+    </div>
+
+    <div id="hero" class="hero-wrap">
+        <div class="hero-visual">
+            <div id="waffleVisual" class="flat-waffle"></div>
+            <div style="margin-top:20px; font-style:italic; color:var(--text-muted); opacity:0.8; font-size:13px;">
+                "Customize your own Waffle"
+            </div>
+        </div>
+        <div class="hero-controls">
+            <h2>Build your own Waffle</h2>
+            <p>Start with our signature fresh batter (₱69) and sign your masterpiece with premium toppings. Tap to add!</p>
+            
+            <div class="tabs">
+                <button class="tab-btn active" onclick="switchTab('sweet')">Sweet</button>
+                <button class="tab-btn" onclick="switchTab('creams')">Creams</button>
+                <button class="tab-btn" onclick="switchTab('nutty')">Nutty</button>
+                <button class="tab-btn" onclick="switchTab('premium')">Premium</button>
+            </div>
+
+            <div id="toppingList" class="topping-grid"></div>
+
+            <div class="builder-footer">
+                <div>
+                    <div style="font-size:11px; color:var(--text-muted); font-weight:bold; letter-spacing:1px;">CUSTOM TOTAL</div>
+                    <div class="current-price" id="builderPrice">₱69</div>
+                </div>
+                <div style="display:flex; gap:10px">
+                    <button class="btn-ghost" onclick="resetBuilder()">Clear</button>
+                    <button class="btn" style="width:auto; padding:10px 25px" onclick="addCustomWaffleToCart()">Add to Tray</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="cat-wrap">
+        <button class="cat-btn active" onclick="setCategory('all')">All Menu</button>
+        <button class="cat-btn" onclick="setCategory('signatures')">Signatures</button>
+        <button class="cat-btn" onclick="setCategory('combos')">Chef's Combos</button>
+        <button class="cat-btn" onclick="setCategory('savory')">Savory</button>
+        <button class="cat-btn" onclick="setCategory('drinks')">Drinks</button>
+    </div>
+
+    <div id="productGrid" class="grid"></div>
+
+</div>
+
+<div class="bottom-bar" onclick="openCart()">
+    <div>
+        <div style="font-size:12px; color:var(--text-muted)">Total</div>
+        <div class="cart-sum" id="mobileTotal">₱0</div>
+    </div>
+    <button class="btn" style="width:auto; padding:10px 24px; border-radius:25px; font-size:14px;">View Tray (<span id="mobileCount">0</span>)</button>
+</div>
+
+<div id="loginModal" class="modal">
+    <div class="sheet">
+        <div class="sheet-header"><h3>Access Heaven</h3><button class="close-btn" onclick="closeLogin()">×</button></div>
+        <div class="form-group"><label class="form-label">Email</label><input type="email" id="loginEmail" class="form-input" placeholder="user@example.com"></div>
+        <div class="form-group"><label class="form-label">Password</label><input type="password" id="loginPass" class="form-input" placeholder="••••••"></div>
+        <button class="btn" onclick="performLogin()">Login / Register</button>
+        <p style="text-align:center; font-size:13px; color:var(--text-muted); margin-top:20px">New? We'll give you a voucher instantly.</p>
+    </div>
+</div>
+
+<div id="cartModal" class="modal">
+    <div class="sheet">
+        <div class="sheet-header"><h3>Your Tray</h3><button class="close-btn" onclick="closeCart()">×</button></div>
+        <div id="cartList" style="margin-bottom:20px; min-height:50px;"></div>
+        
+        <div class="form-group">
+            <label class="form-label">Promo Code</label>
+            <div style="display:flex; gap:10px">
+                <input id="promoCode" class="form-input" placeholder="JOY10 or WELCOME50">
+                <button class="btn-ghost" onclick="applyPromo()">Apply</button>
+            </div>
+            <div id="promoStatus" style="font-size:13px; margin-top:8px; font-weight:bold;"></div>
+        </div>
+
+        <div style="border-top:1px dashed var(--text-muted); padding-top:15px; margin-bottom:20px;">
+            <div class="r-row" style="color:var(--text-muted)"><span>Subtotal</span><span id="cSub">₱0</span></div>
+            <div class="r-row" style="color:var(--text-muted)"><span>Delivery</span><span id="cDel">₱50</span></div>
+            <div class="r-row" style="color:var(--success); display:none" id="cDiscRow"><span>Discount</span><span id="cDisc">-₱0</span></div>
+            <div class="r-row" style="font-size:22px; color:var(--accent); font-weight:800; margin-top:15px"><span>Total</span><span id="cTot">₱0</span></div>
+        </div>
+        
+        <div style="display:flex; gap:10px;">
+            <button class="btn-ghost" style="flex:1" onclick="closeCart()">Continue Shopping</button>
+            <button class="btn" style="flex:1" onclick="openCheckout()">Checkout</button>
+        </div>
+    </div>
+</div>
+
+<div id="checkoutModal" class="modal">
+    <div class="sheet">
+        <div class="sheet-header"><h3>Delivery Details</h3><button class="close-btn" onclick="closeCheckout()">×</button></div>
+        <div class="form-group"><label class="form-label">Name</label><input id="cxName" class="form-input" placeholder="Full Name"></div>
+        <div class="form-group"><label class="form-label">Phone</label><input id="cxPhone" class="form-input" placeholder="Mobile Number"></div>
+        <div class="form-group"><label class="form-label">Address</label><textarea id="cxAddr" rows="2" placeholder="Complete Address"></textarea></div>
+        <div class="form-group"><label class="form-label">Payment</label><select id="cxPay" class="form-input"><option>Cash on Delivery</option><option>GCash</option></select></div>
+        <button class="btn" onclick="placeOrder()">Place Order</button>
+    </div>
+</div>
+
+<div id="receiptModal" class="modal">
+    <div class="sheet" style="background:#111;"> 
+        <div class="sheet-header"><h3 style="color:var(--accent)">Order Confirmed!</h3><button class="close-btn" style="color:#fff" onclick="closeReceipt()">×</button></div>
+        <div style="display:flex; justify-content:center;"><div id="receiptContent" class="receipt-paper"></div></div>
+        <button class="btn" onclick="closeReceipt()" style="margin-top:20px">Close</button>
+    </div>
+</div>
+
+<div id="productModal" class="modal">
+    <div class="sheet">
+        <div class="sheet-header"><h3 id="pmName"></h3><button class="close-btn" onclick="closeProductModal()">×</button></div>
+        <div id="pmContent"></div>
+    </div>
+</div>
+
+<script>
+/* --- CONFIG & DATA --- */
+const TOPPINGS = {
+    sweet: [
+        {id:'t1', name:'Strawberries', price:40, img:'https://png.pngtree.com/element_pic/17/07/19/144674f4f38bbf7409b9fd3d03460c44.png'},
+        {id:'t2', name:'Blueberries', price:45, img:'https://png.pngtree.com/png-vector/20250422/ourlarge/pngtree-blueberry-icon-vector-illustration-style-png-image_16059544.png'},
+        {id:'t3', name:'Sliced Bananas', price:20, img:'https://static.vecteezy.com/system/resources/previews/007/128/671/non_2x/catch-a-sight-of-this-sliced-banana-icon-isometric-vector.jpg'},
+        {id:'t4', name:'Mango Cubes', price:40, img:'https://png.pngtree.com/png-vector/20250611/ourmid/pngtree-flat-diced-mango-cubes-for-dessert-and-juice-art-png-image_16512437.png'},
+        {id:'t5', name:'Choco Syrup', price:15, img:'https://www.shutterstock.com/image-vector/chocolate-dripped-icon-isolated-on-600nw-2486985663.jpg'},
+        {id:'t6', name:'Maple Syrup', price:10, img:'https://media.istockphoto.com/id/177971413/photo/maple-syrup-in-m-word-on-white-background.jpg?s=170667a&w=0&k=20&c=mTneuZnRlHpDXhO4fdxifPEpth-zH-LlpJYIxBb6KWY='},
+        {id:'t7', name:'Nutella', price:35, img:'https://img.freepik.com/premium-psd/stream-melted-chocolate-isolated-transparent-background_191095-23148.jpg'}
+    ],
+    creams: [
+        {id:'c1', name:'Vanilla Scoop', price:50, img:'https://png.pngtree.com/png-clipart/20250119/original/pngtree-vanilla-ice-cream-scoop-creamy-dessert-design-isolated-on-transparent-background-png-image_20101088.png'},
+        {id:'c2', name:'Butter Pat', price:15, img:'https://www.shutterstock.com/image-vector/butter-rolls-scraped-block-use-600nw-2625345653.jpg'},
+        {id:'c3', name:'Whipped Cream', price:25, img:'https://static.vecteezy.com/system/resources/thumbnails/048/343/335/small/whipped-cream-icon-illustration-png.png'}
+    ],
+    nutty: [
+        {id:'n1', name:'Walnuts', price:45, img:'https://static.vecteezy.com/system/resources/previews/035/378/306/non_2x/kids-drawing-illustration-walnuts-in-a-cartoon-style-isolated-on-white-background-vector.jpg'},
+        {id:'n2', name:'Crushed Oreos', price:25, img:'https://www.shutterstock.com/image-photo/lamphun-thailand-november-22-2019-260nw-1567583962.jpg'}
+    ],
+    premium: [
+        {id:'p1', name:'Biscoff', price:45, img:'https://www.lotusbiscoff.com/sites/default/files/2023-10/3206839-01%20Biscoff%20spread%20creamy%20400g_1.png'},
+        {id:'p2', name:'Ube Halaya', price:40, img:'https://www.shutterstock.com/shutterstock/photos/2422309707/display_1500/stock-vector-filipino-dessert-ube-halaya-illustration-2422309707.jpg'}
+    ]
+};
+
+const PRODUCTS = [
+    // SIGNATURES
+    {id:'s1', cat:'signatures', name:'Belgian Supreme', desc:'Classic batter, maple, butter, cream.', price:99, orig:160, rating:4.8, img:'https://heysnickerdoodle.com/wp-content/uploads/2022/09/Maple-Waffe-square-500x375.jpg'},
+    {id:'s2', cat:'signatures', name:'Choco Hazelnut', desc:'Nutella overload with crushed hazelnuts.', price:199, orig:250, rating:4.9, img:'https://media-assets.swiggy.com/swiggy/image/upload/f_auto,q_auto,fl_lossy/RX_THUMBNAIL/IMAGES/VENDOR/2025/10/18/61f0e90d-fa56-4a91-b927-30b899e6b84b_1236603.jpg'},
+    {id:'s3', cat:'signatures', name:'Berry Cheesecake', desc:'Cream cheese, fresh berries, graham.', price:199, orig:240, rating:4.7, img:'https://www.eatmovemake.com/wp-content/uploads/2015/07/Mixed-Berry-Cream-Cheese-Waffle-Cakes-recipe.jpg'},
+    {id:'s4', cat:'signatures', name:'Cinnamon Churro', desc:'Coated in cinnamon sugar, chocolate dip.', price:99, orig:150, rating:4.8, img:'https://cdn.apartmenttherapy.info/image/upload/f_auto,q_auto:eco,c_fill,g_center,w_730,h_913/k%2FPhoto%2FRecipe%20Ramp%20Up%2F2021-09-Churro-Waffles%2Fchurro-waffles'},
+    {id:'s5', cat:'signatures', name:'Matcha Zen', desc:'Green tea batter with red bean paste.', price:149, orig:190, rating:4.6, img:'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSXI19vFPNLpxjLtpqrOEHJ80xBcVcGW3lWyg&s'},
+    {id:'s6', cat:'signatures', name:'Oreo Cookies', desc:'Vanilla cream with crushed Oreo bits.', price:149, orig:185, rating:4.9, img:'https://www.greedygourmet.com/wp-content/uploads/2023/04/oreo-waffles-feature.jpg'},
+    {id:'s7', cat:'signatures', name:'Banana Walnut', desc:'Caramelized banana with roasted walnuts.', price:129, orig:175, rating:4.5, img:'https://plantbasednews.org/app/uploads/2021/03/5ff3c958a9b9756b658cade7_bananawaffles.jpg'},
+    {id:'s8', cat:'signatures', name:'Tiramisu Waffle', desc:'Espresso soaked, mascarpone, cocoa.', price:199, orig:230, rating:4.8, img:'https://formnutrition.com/wp-content/uploads/2023/05/form-waffles-9.jpg'},
+    {id:'s9', cat:'signatures', name:'Salted Caramel', desc:'House-made caramel with sea salt flakes.', price:129, orig:165, rating:4.7, img:'https://food.fnr.sndimg.com/content/dam/images/food/fullset/2015/6/1/0/DG0102H_Carmel-Big-Apple-Waffle-with-Salted-Caramel-Sauce_s4x3.jpg.rend.hgtvcom.616.462.suffix/1433426755792.webp'},
+    {id:'s10', cat:'signatures', name:'Triple Chocolate', desc:'Dark batter, white chips, milk drizzle.', price:199, orig:210, rating:4.9, img:'https://blogger.googleusercontent.com/img/b/R29vZ2xl/AVvXsEiiTybuOd_s02pH0W0MLahR5Tc9bJvCoN1_rMyyaglJjqeJrUkYkSLjRSdCCCP38kdnn2dLWSNQlGE3H04fTQupK6PTScDGA0Em7x71pgPhhMhEds2RvehJBK8LDPrkwy7_13wKhLpZ997E/s1600/IMG_0965.JPG'},
+    // COMBOS
+    {id:'c1', cat:'combos', name:'The Classic Berry', desc:'Strawberries + Whipped Cream.', price:149, orig:185, rating:4.8, img:'https://www.goldenwaffles.com/cdn/shop/articles/Waffle-Strawberry-Cream_520x500_05cc6cb0-92a7-4917-b9b0-377ac041136c.jpg?v=1740143569'},
+    {id:'c2', cat:'combos', name:'Monkey Business', desc:'Banana + Nutella + Walnuts.', price:199, orig:220, rating:4.9, img:'https://static1.squarespace.com/static/5113fcede4b099bd04eebc8d/51141915e4b0e2ced97a09e8/63d7dda628dbeb217828feea/1675354939052/chunky-monkey-waffles6.jpg?format=1500w'},
+    {id:'c3', cat:'combos', name:'Campfire S\'mores', desc:'Marshmallows + Choco Syrup + Chips.', price:129, orig:175, rating:4.7, img:'https://www.kingarthurbaking.com/sites/default/files/blog-images/2016/07/Smores_waffles-6.jpg'},
+    {id:'c4', cat:'combos', name:'Ube Delight', desc:'Ube Halaya + Vanilla Scoop.', price:199, orig:210, rating:5.0, img:'https://keepingitrelle.com/wp-content/uploads/2020/05/Ube-Mochi-Waffles-8-320x320.jpg'},
+    {id:'c5', cat:'combos', name:'Biscoff Cloud', desc:'Biscoff + Whipped Cream.', price:149, orig:190, rating:4.8, img:'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRTZCPoQPngzFffXAqRs3uEj563b8UbHiSOndcdtBPBRF1eNdz2bElfnAwvKx85p98km1o&usqp=CAU'},
+    {id:'c6', cat:'combos', name:'Midnight Madness', desc:'Choco Syrup + Choco Chips + Oreos.', price:149, orig:180, rating:4.6, img:'https://gimmethatflavor.com/wp-content/uploads/2023/08/Oreo-Waffles-11.jpg'},
+    {id:'c7', cat:'combos', name:'Tropical Sunset', desc:'Mango + Strawberry + Maple Syrup.', price:199, orig:210, rating:4.7, img:'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQKWNaDOIhWYo2-eymgJFAD6A5NORu5alJ-3Q&s'},
+    {id:'c8', cat:'combos', name:'Butter Maple Glaze', desc:'Double Butter + Extra Maple Syrup.', price:99, orig:145, rating:4.5, img:'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcS94osd7KGRSQirViHEsoapZgs0KoAyOjimgg&s'},
+    {id:'c9', cat:'combos', name:'Hazelnut Mode', desc:'Nutella + Vanilla Ice Cream.', price:199, orig:205, rating:4.9, img:'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTTUGVkCNM_13V3-Gbi_Q5MIO-4R2nbLICl182x-o0oaqCmK4cgSRv47ofHa5IUZO5vw9I&usqp=CAU'},
+    {id:'c10', cat:'combos', name:'The Loaded Fruit', desc:'Strawberry + Blueberry + Banana + Mango.', price:249, orig:265, rating:5.0, img:'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTYNn61qKUGwZc09zU8TnKBFe-q-cxYqHxPoQ&s'},
+    {id:'c11', cat:'combos', name:'Oreo Biscoff', desc:'Crushed Oreos + Biscoff + Cream.', price:199, orig:215, rating:4.9, img:'https://mozaabicucina.com/cdn/shop/files/DSC06129.jpg?v=1759567067&width=1445'},
+    {id:'c12', cat:'combos', name:'Mango Graham', desc:'Mango Cubes + Biscoff + Whipped Cream.', price:199, orig:225, rating:4.8, img:'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQGd5_pk6bGOIZ6NmW0gxurRE_EKpngl6Ez0A&s'},
+    {id:'c13', cat:'combos', name:'Choco Banana Split', desc:'Banana + Vanilla Scoop + Choco Syrup.', price:199, orig:230, rating:5.0, img:'https://irepo.primecp.com/2018/03/366783/Banana-Split-Waffles_Large600_ID-2668098.jpg?v=2668098'},
+    {id:'c14', cat:'combos', name:'Very Berry Maple', desc:'Strawberry + Blueberry + Maple Syrup.', price:199, orig:210, rating:4.7, img:'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTveqOqFdQk6oHI6xkGRLVeuPsrFTVOgHRJZw&s'},
+    {id:'c15', cat:'combos', name:'Nutty Butterscotch', desc:'Walnuts + Butter Pat + Maple Syrup.', price:149, orig:180, rating:4.6, img:'https://insearchofyummyness.com/wp-content/uploads/2025/10/pecan-pumpkin-waffles-maple-pecan-syrup.jpg'},
+    {id:'c16', cat:'combos', name:'Purple Yam Cream', desc:'Ube Halaya + Vanilla Scoop + Cream.', price:199, orig:230, rating:4.9, img:'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTPxQH-24a04ztn6UHpHZVPTvxEWXchsJulMg&s'},
+    {id:'c17', cat:'combos', name:'Double Choco Bomb', desc:'Nutella + Choco Syrup + Oreos.', price:149, orig:200, rating:4.8, img:'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQQsDlX0jXVS5BRHB-F6K481gmnBVNVpyrb_w&s'},
+    {id:'c18', cat:'combos', name:'Fruity Fiesta', desc:'Mango + Strawberry + Banana.', price:199, orig:240, rating:4.9, img:'https://c8.alamy.com/comp/2F2X0BF/waffle-topped-with-strawberry-banana-and-orange-fruits-and-dark-chocolate-being-poured-isolated-in-studio-with-a-white-background-2F2X0BF.jpg'},
+    {id:'c19', cat:'combos', name:'Walnut Brownie', desc:'Walnuts + Choco Syrup + Vanilla Scoop.', price:199, orig:220, rating:4.7, img:'https://thumbs.dreamstime.com/b/freshly-made-waffle-topped-scoop-creamy-vanilla-ice-cream-drizzled-decadent-chocolate-sauce-freshly-made-329732089.jpg'},
+    {id:'c20', cat:'combos', name:'Biscoff Banana', desc:'Biscoff Spread + Sliced Banana.', price:149, orig:185, rating:4.8, img:'https://maisoncupcake.com/wp-content/uploads/2016/05/speculoos-waffles-chocolate-banana-2-2.jpg'},
+    // SAVORY
+    {id:'m1', cat:'savory', name:'Chicken & Waffles', desc:'Fried chicken with gravy-maple.', price:199, orig:280, rating:5.0, img:'https://the-kitchencoalition.com/wp-content/uploads/2024/05/Fried-Chicken-and-Waffles-Feature-Image-Redo-480x270.jpg'},
+    {id:'m2', cat:'savory', name:'Bacon & Egg', desc:'Crispy bacon, sunny-side up egg.', price:149, orig:210, rating:4.6, img:'https://thumbs.dreamstime.com/b/plate-waffles-bacon-fried-egg-holds-freshly-made-topped-crispy-strips-creating-savory-sweet-breakfast-dish-320646546.jpg'},
+    {id:'m3', cat:'savory', name:'Ham & Cheese', desc:'Stuffed waffle with ham and cheddar.', price:149, orig:180, rating:4.5, img:'https://www.goldenwaffles.com/cdn/shop/articles/waffle_melt_stack.png?v=1740598230'},
+    {id:'m4', cat:'savory', name:'Smoked Salmon', desc:'Dill cream cheese, capers, salmon.', price:249, orig:290, rating:4.8, img:'https://www.imagelicious.com/wp-content/uploads/2015/12/img-22.jpg'},
+    {id:'m5', cat:'savory', name:'Waffle Burger', desc:'Beef patty, lettuce, tomato, waffle bun.', price:199, orig:250, rating:4.7, img:'https://www.mashed.com/img/gallery/waffles-are-the-perfectly-sweet-replacement-for-savory-burger-buns/intro-1695310300.jpg'},
+    {id:'m6', cat:'savory', name:'Spam & Scramble', desc:'Grilled Spam with fluffy eggs.', price:129, orig:170, rating:4.4, img:'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSw6wQPuDNqB2n2bV1u2oubnP39h1TaYplS8g&s'},
+    {id:'m7', cat:'savory', name:'Pulled Pork', desc:'Slow-cooked pork, coleslaw, BBQ.', price:199, orig:260, rating:4.9, img:'https://southernbite.com/wp-content/uploads/2016/10/Cornbread-Waffle-Pulled-Pork-Sandwich-500x447.jpg'},
+    {id:'m8', cat:'savory', name:'Pizza Waffle', desc:'Pepperoni, mozzarella, tomato sauce.', price:149, orig:195, rating:4.6, img:'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQzET5VtZlQqHaODrqSmiEeKcMMmYiJhBwOmTWGSbcy367heqP5wf5OqMkM0sajK3Fr55Y&usqp=CAU'},
+    {id:'m9', cat:'savory', name:'Tuna Melt', desc:'Creamy tuna salad with melted cheese.', price:129, orig:175, rating:4.3, img:'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcT07ya4Xnk5wj29q6LqY2gLgTIB85P6to04Uw&s'},
+    {id:'m10', cat:'savory', name:'Corned Beef Hash', desc:'Crispy corned beef, potato chunks.', price:149, orig:200, rating:4.5, img:'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcS3yXQGVCAt-7DJI4F7cTj9Xu_CTascilOOyg&s'},
+    // DRINKS
+    {id:'d1', cat:'drinks', name:'Spanish Latte', desc:'Sweet milky coffee, cold brewed.', price:99, orig:140, rating:4.9, img:'https://images.ctfassets.net/v601h1fyjgba/4PhoFWJ3ooy53ZyN6xcfrV/850b965139c777c58a256d430d0ace46/15697_Keurig_CafeCreations_Spanish_Latte_Iced_COMP_Hi__1_.jpg'},
+    {id:'d2', cat:'drinks', name:'Dark Mocha', desc:'Belgian cocoa blended with espresso.', price:129, orig:160, rating:4.7, img:'https://blogger.googleusercontent.com/img/b/R29vZ2xl/AVvXsEjEjA2pGMDAEC31p0KEFJtJBv18I8k7GcEaPRRsE6iCFqEYR6dRJ1FxtaNXlctgt6WrcfEUCkW2kno9w04C7Y6ygaxVH22K7_2_xXP8mzwiKgNjWaqENqxM55fMHBDWsSEeI5RUg7tR2QPm/s1600/frozen-dark-chocolate-mocha-8.jpg'},
+    {id:'d3', cat:'drinks', name:'Strawberry Yogurt', desc:'Fresh strawberry smoothie.', price:99, orig:150, rating:4.8, img:'https://foodsharingvegan.com/wp-content/uploads/2022/03/Strawberry-Yogurt-Smoothie-Plant-Based-on-a-Budget-1-2.jpg'},
+    {id:'d4', cat:'drinks', name:'Hot Cappuccino', desc:'Steamed milk foam, espresso dust.', price:89, orig:120, rating:4.5, img:'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTAg7HAZAS8tlXyCsriNQp851uY791FcMUPFQ&s'},
+    {id:'d5', cat:'drinks', name:'Iced Americano', desc:'Double shot espresso, cold water.', price:79, orig:110, rating:4.4, img:'https://littlebitrecipes.com/wp-content/uploads/2023/07/iced-americano-l.jpg'},
+    {id:'d6', cat:'drinks', name:'Blueberry Shake', desc:'Real blueberries, milk, honey.', price:129, orig:155, rating:4.7, img:'https://www.cakenknife.com/wp-content/uploads/2025/06/Blueberry-Milkshake-Web_4461.jpg'},
+    {id:'d7', cat:'drinks', name:'Lemonade', desc:'Freshly squeezed lemon, sparkling.', price:69, orig:100, rating:4.6, img:'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRWNURD3inH6tzIlW8_QtyFyCo2uxpMg21__w&s'},
+    {id:'d8', cat:'drinks', name:'Hot Chocolate', desc:'Rich cocoa with marshmallows.', price:99, orig:130, rating:4.8, img:'https://intentionalhospitality.com/wp-content/uploads/2025/09/hot-chocolate-recipe.jpg'},
+    {id:'d9', cat:'drinks', name:'Mango Shake', desc:'Ripe mangoes blended with ice.', price:119, orig:145, rating:4.9, img:'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTnXokw8YoqlreeJoMxpYxrr3VGcQLTwWrgQg&s'},
+    {id:'d10', cat:'drinks', name:'Lychee Tea', desc:'Jasmine tea base with lychee jelly.', price:89, orig:125, rating:4.5, img:'https://images.unsplash.com/photo-1621262561546-5136863640b3?w=300https://www.google.com/url?sa=i&url=https%3A%2F%2Fwww.instagram.com%2Freel%2FCpQ8y3-D5Ry%2F&psig=AOvVaw05gEJjj2mfxpydWEYxARIP&ust=1764260379928000&source=images&cd=vfe&opi=89978449&ved=0CBUQjRxqFwoTCIjRqLSckJEDFQAAAAAdAAAAABAK'}
+];
+
+// Add mock reviews
+PRODUCTS.forEach(p => p.reviews = [
+    {u:"Alice", r:5, t:"Absolutely delicious!"},
+    {u:"Bob", r:4, t:"Great flavor, fast delivery."},
+    {u:"Guest", r:5, t:"My favorite treat."}
+]);
+
+/* --- GLOBAL VARS --- */
+let cart = [];
+let builderState = { basePrice: 69, toppings: [] };
+let promoDiscount = 0;
+let deliveryFee = 50;
+let currentUser = null;
+let currentProdId = null;
+let autoSlideInterval;
+
+/* --- UI UTILS --- */
+function toggleTheme(){
+    document.body.classList.toggle('light-mode');
+}
+
+function showToast(msg){
+    const t = document.getElementById('toast');
+    t.innerText = msg;
+    t.classList.add('show');
+    setTimeout(()=>t.classList.remove('show'), 2000);
+}
+
+function scrollToSection(id){ 
+    document.getElementById(id).scrollIntoView({behavior:'smooth'}); 
+}
+
+/* --- CAROUSEL --- */
+let currentSlide = 0;
+const slides = document.querySelectorAll('.c-slide');
+const track = document.getElementById('cTrack');
+const nav = document.getElementById('cNav');
+
+function initCarousel() {
+    slides.forEach((_, i) => {
+        const dot = document.createElement('div');
+        dot.className = `c-dot ${i===0?'active':''}`;
+        dot.onclick = () => {
+            goToSlide(i);
+            resetTimer();
+        };
+        nav.appendChild(dot);
+    });
+    startCarousel();
+}
+
+function startCarousel() {
+    if(autoSlideInterval) clearInterval(autoSlideInterval);
+    autoSlideInterval = setInterval(nextSlide, 4000);
+}
+
+function pauseCarousel() {
+    clearInterval(autoSlideInterval);
+}
+
+function resetTimer() {
+    pauseCarousel();
+    startCarousel();
+}
+
+function goToSlide(n) {
+    currentSlide = n;
+    track.style.transform = `translateX(-${currentSlide * 100}%)`;
+    document.querySelectorAll('.c-dot').forEach((d, i) => d.classList.toggle('active', i === currentSlide));
+}
+
+function nextSlide() {
+    currentSlide = (currentSlide + 1) % slides.length;
+    goToSlide(currentSlide);
+}
+
+function prevSlide() {
+    currentSlide = (currentSlide - 1 + slides.length) % slides.length;
+    goToSlide(currentSlide);
+    resetTimer();
+}
+
+/* --- BUILDER --- */
+function initWaffleVisual(){
+    const el = document.getElementById('waffleVisual');
+    let html = '';
+    for(let i=0; i<36; i++) { html += `<div class="w-hole"></div>`; }
+    el.innerHTML = html;
+    switchTab('sweet');
+}
+
+function switchTab(cat){
+    document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+    event.target.classList.add('active');
+    const list = document.getElementById('toppingList');
+    list.innerHTML = TOPPINGS[cat].map(t => {
+        const isSel = builderState.toppings.find(bt => bt.id === t.id);
+        return `
+        <div class="t-btn ${isSel ? 'selected' : ''}" onclick="toggleTopping('${cat}', '${t.id}')">
+            <img src="${t.img}">
+            <span>${t.name}</span>
+            <span style="color:var(--accent); font-weight:bold">+₱${t.price}</span>
+        </div>`;
+    }).join('');
+}
+
+function toggleTopping(cat, id){
+    const t = TOPPINGS[cat].find(x => x.id === id);
+    const idx = builderState.toppings.findIndex(x => x.id === id);
+    if(idx > -1) builderState.toppings.splice(idx, 1);
+    else { builderState.toppings.push(t); addVisualDot(t.img); }
+    updateBuilderUI();
+    switchTab(cat);
+}
+
+function addVisualDot(img){
+    const w = document.getElementById('waffleVisual');
+    const d = document.createElement('div');
+    d.className='topping-dot'; d.style.backgroundImage=`url('${img}')`;
+    const r = 70 * Math.sqrt(Math.random());
+    const theta = Math.random() * 2 * Math.PI;
+    d.style.top = `calc(50% + ${r * Math.sin(theta)}px - 22.5px)`;
+    d.style.left = `calc(50% + ${r * Math.cos(theta)}px - 22.5px)`;
+    w.appendChild(d);
+}
+
+function updateBuilderUI(){
+    const tot = builderState.basePrice + builderState.toppings.reduce((a,b)=>a+b.price,0);
+    document.getElementById('builderPrice').innerText = '₱' + tot;
+}
+
+function resetBuilder(){
+    builderState.toppings = [];
+    document.querySelectorAll('.topping-dot').forEach(e=>e.remove());
+    updateBuilderUI();
+    switchTab('sweet');
+}
+
+function addCustomWaffleToCart(){
+    if(!builderState.toppings.length && !confirm("Add plain batter?")) return;
+    const tot = builderState.basePrice + builderState.toppings.reduce((a,b)=>a+b.price,0);
+    const desc = builderState.toppings.map(t=>t.name).join(', ') || 'Plain Golden Batter';
+    addToCart({ id:'cust'+Date.now(), name:'Custom Creation', desc:desc, price:tot, qty:1 });
+    resetBuilder();
+    showToast("Custom Waffle Added!");
+}
+
+/* --- PRODUCTS & CATEGORIES --- */
+function renderProducts(cat='all'){
+    const grid = document.getElementById('productGrid');
+    const list = cat==='all' ? PRODUCTS : PRODUCTS.filter(p=>p.cat===cat);
+    grid.innerHTML = list.map(p => `
+        <div class="card" onclick="openProductModal('${p.id}')">
+            <img src="${p.img}">
+            <div class="card-info">
+                <h3>${p.name}</h3>
+                <p>${p.desc}</p>
+                <div class="card-actions">
+                    <div class="price-wrap">
+                        <span class="price-old">₱${p.orig}</span>
+                        <span class="price-new">₱${p.price}</span>
+                    </div>
+                    <button class="add-btn" onclick="event.stopPropagation(); addPreset('${p.id}')">+</button>
+                </div>
+            </div>
+        </div>
+    `).join('');
+}
+
+function setCategory(cat){
+    document.querySelectorAll('.cat-btn').forEach(b => b.classList.toggle('active', b.innerText.toLowerCase().includes(cat) || (cat==='all' && b.innerText.includes('All'))));
+    renderProducts(cat);
+}
+
+function addPreset(id){
+    const p = PRODUCTS.find(x=>x.id===id);
+    addToCart({...p, qty:1});
+    showToast(`${p.name} Added!`);
+}
+
+function filterGlobal(term){
+    term = term.toLowerCase();
+    const grid = document.getElementById('productGrid');
+    const list = PRODUCTS.filter(p => p.name.toLowerCase().includes(term) || p.desc.toLowerCase().includes(term));
+    grid.innerHTML = list.map(p => `
+        <div class="card" onclick="openProductModal('${p.id}')">
+            <img src="${p.img}">
+            <div class="card-info">
+                <h3>${p.name}</h3>
+                <p>${p.desc}</p>
+                <div class="card-actions">
+                    <div class="price-wrap">
+                        <span class="price-old">₱${p.orig}</span>
+                        <span class="price-new">₱${p.price}</span>
+                    </div>
+                    <button class="add-btn" onclick="event.stopPropagation(); addPreset('${p.id}')">+</button>
+                </div>
+            </div>
+        </div>
+    `).join('');
+}
+
+/* --- LOGIN --- */
+function openLogin(){ document.getElementById('loginModal').classList.add('open'); }
+function closeLogin(){ document.getElementById('loginModal').classList.remove('open'); }
+
+function performLogin(){
+    const email = document.getElementById('loginEmail').value;
+    if(!email) return alert("Please enter email");
+    currentUser = { name: email.split('@')[0] };
+    
+    const pcBtn = document.getElementById('loginBtnIcon');
+    pcBtn.innerHTML = `👤`;
+    pcBtn.style.background = "var(--success)";
+    
+    closeLogin();
+    alert(`Welcome, ${currentUser.name}! Use code "WELCOME50" for ₱50 OFF.`);
+}
+
+/* --- CART & CHECKOUT --- */
+function addToCart(item){
+    const ex = cart.find(x=>x.id===item.id && x.desc===item.desc);
+    if(ex) ex.qty++; else cart.push(item);
+    updateCartTotals();
+}
+
+function updateCartTotals(){
+    const count = cart.reduce((a,b)=>a+b.qty,0);
+    const sub = cart.reduce((a,b)=>a+(b.price*b.qty),0);
+    let disc = promoDiscount === 50 ? 50 : Math.round(sub * promoDiscount);
+    const tot = sub + deliveryFee - disc;
+    
+    document.getElementById('mobileCount').innerText = count;
+    document.getElementById('mobileTotal').innerText = '₱' + tot;
+    
+    document.getElementById('pcCount').innerText = count;
+    if(window.innerWidth >= 800) document.getElementById('pcCartBtn').style.display = 'flex';
+
+    document.getElementById('cartList').innerHTML = cart.length ? cart.map(i=>`
+        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:12px; border-bottom:1px solid var(--border); padding-bottom:8px;">
+            <div style="flex:1">
+                <div style="font-weight:bold; color:var(--text-main)">${i.name}</div>
+                <div style="font-size:12px; color:var(--text-muted)">${i.desc || ''}</div>
+                <div style="font-size:13px; color:var(--accent); margin-top:4px;">₱${i.price} x ${i.qty}</div>
+            </div>
+            <div style="font-weight:bold; font-size:16px; color:var(--text-main)">₱${i.price*i.qty}</div>
+        </div>
+    `).join('') : '<div style="text-align:center; color:var(--text-muted); padding:20px;">Tray is empty.</div>';
+    
+    document.getElementById('cSub').innerText = '₱'+sub;
+    if(disc>0) {
+        document.getElementById('cDiscRow').style.display='flex';
+        document.getElementById('cDisc').innerText = '-₱'+disc;
+    }
+    document.getElementById('cTot').innerText = '₱'+tot;
+}
+
+function applyPromo(){
+    const val = document.getElementById('promoCode').value.toUpperCase();
+    const stat = document.getElementById('promoStatus');
+    
+    if(val==='JOY10'){ 
+        promoDiscount=0.1; stat.innerText="10% Applied!"; stat.style.color="var(--success)";
+    } else if(val==='WELCOME50'){
+        if(!currentUser) { alert("Login required!"); return; }
+        promoDiscount=50; stat.innerText="Welcome Discount Applied!"; stat.style.color="var(--success)";
+    } else {
+        promoDiscount=0; stat.innerText="Invalid Code"; stat.style.color="var(--danger)";
+    }
+    updateCartTotals();
+}
+
+function openCart(){ document.getElementById('cartModal').classList.add('open'); }
+function closeCart(){ document.getElementById('cartModal').classList.remove('open'); }
+function openCheckout(){ if(!cart.length) return alert("Tray empty"); closeCart(); document.getElementById('checkoutModal').classList.add('open'); }
+function closeCheckout(){ document.getElementById('checkoutModal').classList.remove('open'); }
+
+function placeOrder(){
+    const name = document.getElementById('cxName').value;
+    if(!name) return alert("Fill details!");
+    
+    const sub = cart.reduce((a,b)=>a+(b.price*b.qty),0);
+    let disc = promoDiscount === 50 ? 50 : Math.round(sub * promoDiscount);
+    const tot = sub + deliveryFee - disc;
+    const id = '#' + Math.floor(100000 + Math.random() * 900000);
+
+    let html = `
+        <div style="text-align:center; margin-bottom:15px">
+            <h2 style="margin:0; font-size:18px">WAFFLE HEAVEN</h2>
+            <p style="margin:0; font-size:12px">Circle of Joy</p>
+        </div>
+        <div class="r-row"><span>Order ID:</span><span>${id}</span></div>
+        <div class="r-row"><span>Customer:</span><span>${name}</span></div>
+        <div class="r-line"></div>
+    `;
+    cart.forEach(i => html += `<div class="r-row"><span>${i.qty}x ${i.name}</span><span>${i.price*i.qty}</span></div>`);
+    html += `
+        <div class="r-line"></div>
+        <div class="r-row"><span>Subtotal</span><span>${sub}</span></div>
+        <div class="r-row"><span>Delivery</span><span>${deliveryFee}</span></div>
+        <div class="r-row"><span>Discount</span><span>-${disc}</span></div>
+        <div class="r-row" style="font-weight:bold; font-size:16px; margin-top:10px"><span>TOTAL</span><span>₱${tot}</span></div>
+        <div style="text-align:center; font-size:11px; margin-top:15px">~ Enjoy! ~</div>
+    `;
+    
+    document.getElementById('receiptContent').innerHTML = html;
+    closeCheckout();
+    document.getElementById('receiptModal').classList.add('open');
+    cart = []; builderState.toppings=[]; updateCartTotals();
+}
+function closeReceipt(){ document.getElementById('receiptModal').classList.remove('open'); }
+
+/* --- PRODUCT MODAL --- */
+function openProductModal(id){
+    currentProdId = id;
+    const p = PRODUCTS.find(x=>x.id===id);
+    document.getElementById('pmName').innerText = p.name;
+    
+    const reviewsHtml = p.reviews.map(r => `
+        <div class="review-item">
+            <div class="r-head">${r.u} <span style="color:var(--slashed); font-weight:normal">• ${'★'.repeat(r.r)}</span></div>
+            <div class="r-text">"${r.t}"</div>
+        </div>
+    `).join('');
+
+    let html = `
+        <img src="${p.img}" style="width:100%; height:250px; object-fit:cover; border-radius:15px; margin-bottom:15px">
+        <div style="display:flex; justify-content:space-between; align-items:center;">
+            <div>
+                <span style="text-decoration:line-through; color:var(--slashed); font-size:14px">₱${p.orig}</span>
+                <h2 style="margin:0; color:var(--accent)">₱${p.price}</h2>
+            </div>
+            <div style="color:var(--accent)">★ ${p.rating}</div>
+        </div>
+        <p style="color:var(--text-muted); line-height:1.6; font-size:15px;">${p.desc}</p>
+        <button class="btn" style="margin-top:10px" onclick="addPreset('${p.id}'); closeProductModal()">Add to Tray</button>
+        
+        <div class="review-box">
+            <h4 style="margin:0 0 10px 0; color:var(--text-main)">Customer Reviews</h4>
+            ${reviewsHtml}
+            <div style="margin-top:15px; background:var(--glass); padding:10px; border-radius:10px; border:1px solid var(--border);">
+                <div style="font-size:13px; margin-bottom:5px; color:var(--text-muted); font-weight:bold">Write a Review</div>
+                <select id="newRating" style="margin-bottom:8px; padding:10px; width:100%"><option value="5">★★★★★</option><option value="4">★★★★</option><option value="3">★★★</option></select>
+                <input id="newReview" class="form-input" placeholder="Share thoughts...">
+                <button class="btn-ghost" style="margin-top:8px; width:100%" onclick="submitReview()">Submit</button>
+            </div>
+        </div>
+    `;
+    document.getElementById('pmContent').innerHTML = html;
+    document.getElementById('productModal').classList.add('open');
+}
+function closeProductModal(){ document.getElementById('productModal').classList.remove('open'); }
+
+function submitReview(){
+    const txt = document.getElementById('newReview').value;
+    const rate = parseInt(document.getElementById('newRating').value);
+    if(!currentUser) return alert("Please Login first");
+    if(!txt) return alert("Write something!");
+    
+    const p = PRODUCTS.find(x=>x.id===currentProdId);
+    p.reviews.unshift({u: currentUser.name, r: rate, t: txt});
+    openProductModal(currentProdId); // Refresh
+}
+
+/* INIT */
+initWaffleVisual();
+initCarousel();
+renderProducts();
+</script>
+</body>
+</html>
